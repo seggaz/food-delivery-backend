@@ -6,45 +6,101 @@ const port = 3001;
 const shopsController = require('./controllers/shopsController');
 const orderController = require('./controllers/orderController');
 const db = require('./db');
-const initialData = require('./data/data.json');
 
 app.use(express.json());
 app.use(cors());
 
+app.get('/shops', shopsController.getShops);
+app.post('/orders', orderController.createOrder);
+
+//Перевірка створені дані або не створені
 db.serialize(() => {
-  initialData.shops.forEach((shop) => {
-    const { id, name, products } = shop;
-
-    const insertShopQuery = `INSERT INTO shops (id, name) VALUES (?, ?)`;
-    db.run(insertShopQuery, [id, name], (err) => {
-      if (err) {
-        console.error(err);
+  db.get("SELECT name FROM sqlite_master WHERE type='table'", (err, row) => {
+    if (err) {
+      console.error(err);
+    } else {
+      if (row) {
+        console.log("The database already exists.");
+        startServer();
+      } else {
+        console.log("The database does not exist. We are creating a new...");
+        createTables();
       }
-    });
-
-    products.forEach((product) => {
-      const { id: productId, name, image, price } = product;
-
-      const insertProductQuery = `
-        INSERT INTO products (id, shop_id, name, image, price) VALUES (?, ?, ?, ?, ?)
-      `;
-      db.run(
-        insertProductQuery,
-        [productId, id, name, image, price],
-        (err) => {
-          if (err) {
-            console.error(err);
-          }
-        }
-      );
-    });
+    }
   });
 });
 
-app.get('/shops', shopsController.getShops);
+function createTables() {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS shops (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name VARCHAR(255)
+    )
+  `, (err) => {
+    if (err) {
+      console.error(err);
+    } else {
+      createProductsTable(err);
+    }
+  });
+}
 
-app.post('/order', orderController.createOrder);
+function createProductsTable() {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS products (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      shop_id INTEGER,
+      name VARCHAR(255),
+      image TEXT,
+      price FLOAT,
+      FOREIGN KEY (shop_id) REFERENCES shops(id)
+    )
+  `, (err) => {
+    if (err) {
+      console.error(err);
+    } else {
+      createOrdersTable(err);
+    }
+  });
+}
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+function createOrdersTable() {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS orders (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email VARCHAR(255),
+      phone VARCHAR(255),
+      name VARCHAR(255)
+    )
+  `, (err) => {
+    if (err) {
+      console.error(err);
+    } else {
+      createOrdersProductsTable(err);
+    }
+  });
+}
+
+function createOrdersProductsTable() {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS orders_products (
+      order_id INTEGER,
+      product_id INTEGER,
+      FOREIGN KEY (order_id) REFERENCES orders(id),
+      FOREIGN KEY (product_id) REFERENCES products(id)
+    )
+  `, (err) => {
+    if (err) {
+      console.error(err);
+    } else {
+      startServer(err);
+    }
+  });
+}
+
+function startServer() {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
+

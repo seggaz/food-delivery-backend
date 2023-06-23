@@ -2,9 +2,9 @@ const db = require('../db');
 
 // POST /order
 const createOrder = (req, res) => {
-  const { email, phone, name, ordered_products } = req.body;
+  const { email, phone, name, orders_products } = req.body;
 
-  if (!email || !phone || !name || !ordered_products) {
+  if (!email || !phone || !name || !orders_products) {
     res.status(400).json({ error: 'Missing required fields' });
     return;
   }
@@ -18,17 +18,23 @@ const createOrder = (req, res) => {
       res.status(500).json({ error: 'Failed to insert order' });
     } else {
       const orderId = this.lastID;
-      const orderedProducts = ordered_products.map((productId) => [orderId, productId]);
+      const orderedProducts = orders_products.map((product) => [
+        orderId,
+        product.id,
+        product.quantity,
+        product.name,
+      ]);
 
       const insertOrderProductsQuery = `
-        INSERT INTO orders_products (order_id, product_id) VALUES (?, ?)
+        INSERT INTO orders_products (order_id, product_id, quantity, name) VALUES (?, ?, ?, ?)
       `;
+
       db.run(insertOrderProductsQuery, orderedProducts, function (err) {
         if (err) {
           console.error(err);
           res.status(500).json({ error: 'Failed to insert order products' });
         } else {
-          res.json({ success: true });
+          res.json({ success: true, orderedProducts: orderedProducts });
         }
       });
     }
