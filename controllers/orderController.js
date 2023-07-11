@@ -17,26 +17,28 @@ const createOrder = (req, res) => {
       console.error(err);
       res.status(500).json({ error: 'Failed to insert order' });
     } else {
-      const orderId = this.lastID;
-      const orderedProducts = orders_products.map((product) => [
-        orderId,
-        product.id,
-        product.quantity,
-        product.name,
-      ]);
-
-      const insertOrderProductsQuery = `
+		const orderId = this.lastID;
+		const orderedProducts = orders_products.map((product) => ({
+			order_id: orderId,
+		  	product_id: product.id,
+		  	quantity: product.quantity,
+		  	name: product.name,
+		}));
+  
+	const insertOrderProductsQuery = `
         INSERT INTO orders_products (order_id, product_id, quantity, name) VALUES (?, ?, ?, ?)
       `;
 
-      db.run(insertOrderProductsQuery, orderedProducts, function (err) {
-        if (err) {
-          console.error(err);
-          res.status(500).json({ error: 'Failed to insert order products' });
-        } else {
-          res.json({ success: true, orderedProducts: orderedProducts });
-        }
+      orderedProducts.forEach((product) => {
+        db.run(insertOrderProductsQuery, [product.order_id, product.product_id, product.quantity, product.name], function (err) {
+          if (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Failed to insert order products' });
+          }
+        });
       });
+
+      res.status(201).json({ orderedProducts: orderedProducts });
     }
   });
 };
