@@ -1,0 +1,6 @@
+# dependencies
+*.log
+node_modules/
+
+#files
+database.db
