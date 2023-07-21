@@ -11,7 +11,7 @@ jobs:
       - name: Lint application
         run: npm run lint
 
-   test:
+  test:
     needs: lint
     strategy:
       matrix:
