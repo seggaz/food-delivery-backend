@@ -1,12 +1,10 @@
-module.exports = {
-    "env": {
-        "browser": true,
-        "commonjs": true,
+ {
+	"env": {
+        "node": true,
         "es2021": true
     },
     "extends": [
-        "eslint:recommended",
-        "plugin:react/recommended"
+        "eslint:recommended"
     ],
     "overrides": [
         {
@@ -23,10 +21,6 @@ module.exports = {
     ],
     "parserOptions": {
         "ecmaVersion": "latest"
-    },
-    "rules": {
-		"prefer-const": "error",
-		"semi": ["warn", "always"],
-		"react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }]
-	  }
+    }
+   
 }
