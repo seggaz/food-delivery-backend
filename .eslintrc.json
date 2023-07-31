@@ -1,0 +1,26 @@
+{
+	"env": {
+	  "node": true,
+	  "es2022": true
+	},
+	"extends": [
+	  "eslint:recommended"
+	],
+	"overrides": [
+	  {
+		"env": {
+		  "node": true
+		},
+		"files": [
+		  ".eslintrc.cjs"
+		],
+		"parserOptions": {
+		  "sourceType": "module"
+		}
+	  }
+	],
+	"parserOptions": {
+	  "ecmaVersion": "latest"
+	}
+  }
+  
