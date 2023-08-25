@@ -5,6 +5,51 @@ const dbPath = path.join(__dirname, './database.db');
 
 const db = new sqlite3.Database(dbPath);
 
+
+db.run(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    password TEXT NOT NULL
+  )
+`);
+
+const createUser = (username, password) => {
+  return new Promise((resolve, reject) => {
+    const insertUserQuery = `
+		INSERT INTO users (username, password) VALUES (?, ?)
+	  `;
+
+    db.run(insertUserQuery, [username, password], function (err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(this.lastID);
+      }
+    });
+  });
+};
+
+const getUserByUsername = (username) => {
+  return new Promise((resolve, reject) => {
+    const selectUserQuery = `
+		SELECT * FROM users WHERE username = ?
+	  `;
+
+    db.get(selectUserQuery, [username], (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        if (row) {
+          resolve(row);
+        } else {
+          resolve(null);
+        }
+      }
+    });
+  });
+};
+
 const getShops = () => {
   return new Promise((resolve, reject) => {
     const selectShopsQuery = `
@@ -62,12 +107,16 @@ const createOrder = (orderData) => {
         `;
 
         orderedProducts.forEach((product) => {
-          db.run(insertOrderProductsQuery, [product.order_id, product.product_id, product.quantity, product.name], (err) => {
-            if (err) {
-              console.error(err);
-              reject(err);
-            }
-          });
+          db.run(
+            insertOrderProductsQuery,
+            [product.order_id, product.product_id, product.quantity, product.name],
+            (err) => {
+              if (err) {
+                console.error(err);
+                reject(err);
+              }
+            },
+          );
         });
 
         resolve(orderId);
@@ -77,6 +126,8 @@ const createOrder = (orderData) => {
 };
 
 module.exports = {
+  getUserByUsername,
   getShops,
-  createOrder
+  createOrder,
+  createUser,
 };
