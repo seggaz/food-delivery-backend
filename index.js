@@ -12,6 +12,12 @@ app.use(cors());
 app.get('/shops', shopsController.getShops);
 app.post('/orders', orderController.createOrder);
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+const server = app.listen(port, () => {
+	console.log(`Server is running on port ${port}`);
+  });
+  
+  const closeServer = (done) => {
+	server.close(done);
+  };
+  
+  module.exports = { app, closeServer };
