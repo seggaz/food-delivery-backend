@@ -1,7 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const port = 3001;
+const port = process.env.PORT || 3001; 
 
 const shopsController = require('./controllers/shopsController');
 const orderController = require('./controllers/orderController');
@@ -19,7 +20,8 @@ app.use(middleware.verifyToken);
 app.get('/shops', shopsController.getShops);
 app.post('/orders', orderController.createOrder);
 
-const server = app.listen(port, () => {
+const server = process.env.PORT || 3001; 
+app.listen(port, () => {
 	console.log(`Server is running on port ${port}`);
   });
   
@@ -27,4 +29,4 @@ const server = app.listen(port, () => {
 	server.close(done);
   };
   
-  module.exports = { app, closeServer };
+  module.exports = { app, closeServer, server };

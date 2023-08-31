@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-
+const { validationResult } = require('express-validator');
+const { registerValidation } = require('../validations');
 const db = require('../db');
-const SECRET_KEY = '12345';
+const SECRET_KEY = process.env.SECRET_KEY;
 
 const generateToken = (userId) => {
   const payload = { userId };
@@ -11,6 +12,13 @@ const generateToken = (userId) => {
 
 const registerUser = async (req, res) => {
   try {
+	await Promise.all(registerValidation.map(validation => validation.run(req)));
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+	}
+
     const { username, password } = req.body;
 
     if (!username || !password) {
