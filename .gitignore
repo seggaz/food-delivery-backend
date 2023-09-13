@@ -1,5 +1,6 @@
 # dependencies
-node_modules/
+/node_modules
 
 #files
-database.db
+/database.db
+.env
